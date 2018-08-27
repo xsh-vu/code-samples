@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Eleveight.Models.Requests.Utilities
+namespace Eleveight.Models.Requests.Forecasts
 {
     public class ForecastRevenuesInputRequest
     {
