@@ -1,0 +1,17 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace Eleveight.Models.Requests.Utilities
+{
+    public class ForecastRevenuesInputRequest
+    {
+        [Required]
+        public DateTime StartDate { get; set; }
+        [Required]
+        public DateTime EndDate { get; set; }
+        [Required]
+        public int PlanId { get; set; }
+        [Required]
+        public int DurationId { get; set; }
+    }
+}
