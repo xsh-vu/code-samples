@@ -1,14 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using Models.Domain.App;
 using Models.Domain.User;
 using Models.Requests.App;
 using Models.Requests.ForgotPassword;
-using Services.Tools;
 using Models.Requests.ChangePassword;
-using System;
+using Services.Tools;
 using Services.Cryptography;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
+
 
 namespace Services.AppToken
 {

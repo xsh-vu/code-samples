@@ -2,7 +2,7 @@ using Models.Domain.App;
 using Models.Requests.App;
 using System.Collections.Generic;
 
-namespace Services.App
+namespace Services.AppToken
 {
     public interface IAppTokenTypeService
     {
