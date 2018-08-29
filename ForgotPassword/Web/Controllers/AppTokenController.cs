@@ -1,26 +1,38 @@
 using Models.Domain.App;
+using Models.Domain.Tools;
 using Models.Requests.App;
+using Models.Requests.ForgotPassword;
 using Models.Responses;
 using Services;
 using Services.App;
+using Services.Tools;
+using System.Threading.Tasks;
+using Models.Requests.ChangePassword;
 using System;
+using System.Collections.Generic;
 using System.Web.Http;
 
 namespace Web.Controllers.Api.AppToken
 {
-    [RoutePrefix("api/app/apptokentypes")]
-    public class AppTokenTypeController : ApiController
+    [AllowAnonymous]
+    [RoutePrefix("api/App/AppTokens")]
+    public class AppTokenController : ApiController
     {
-    
-        private IAppTokenTypeService _attService;
-        private IAppLogService _appLogService;
-        private IUserService _userService;
+        IAppTokenService _appTokenService;
+        IEmailMessenger _emailMessenger;
+        IAppLogService _appLogService;
+        IUserService _userService;
+        IEmailTemplateService _emailTemplateService;
+        private int currentUserId;
 
-        public AppTokenTypeController(IAppTokenTypeService attService, IAppLogService appLogService, IUserService userService)
+        public AppTokenController(IAppTokenService appTokenService, IEmailMessenger emailMessenger, IAppLogService appLogService, IUserService userService, IEmailTemplateService emailTemplateService)
         {
-            _attService = attService;
+            _appTokenService = appTokenService;
+            _emailMessenger = emailMessenger;
             _appLogService = appLogService;
             _userService = userService;
+            _emailTemplateService = emailTemplateService;
+            currentUserId = _userService.GetCurrentUserId();
         }
 
         [Route(), HttpGet]
@@ -28,35 +40,8 @@ namespace Web.Controllers.Api.AppToken
         {
             try
             {
-                ItemsResponse<AppTokenType> response = new ItemsResponse<AppTokenType>();
-                response.Items = _attService.ReadAll();
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                int currentUser = _userService.GetCurrentUserId();
-                _appLogService.Insert(new AppLogAddRequest
-                {
-                    AppLogTypeId = 1,
-                    Message = ex.Message,
-                    StackTrace = ex.StackTrace,
-                    Title = "Error in " + GetType().Name + " " + System.Reflection.MethodBase.GetCurrentMethod().Name,
-                    UserBaseId = currentUser
-                });
-
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Route("{id:int}"), HttpGet]
-        public IHttpActionResult GetById(int id)
-        {
-            try
-            {
-                ItemResponse<AppTokenType> response = new ItemResponse<AppTokenType>
-                {
-                    Item = _attService.ReadById(id)
-                };
+                ItemsResponse<AppToken> response = new ItemsResponse<AppToken>();
+                response.Items = _appTokenService.ReadAll();
                 return Ok(response);
             }
             catch (Exception ex)
@@ -76,39 +61,12 @@ namespace Web.Controllers.Api.AppToken
         }
 
         [Route(), HttpPost]
-        public IHttpActionResult Post(AppTokenTypeAddRequest model)
+        public IHttpActionResult Post(AppTokenAddRequest model)
         {
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
-                ItemResponse<int> response = new ItemResponse<int>
-                {
-                    Item = _attService.Insert(model)
-                };
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                int currentUser = _userService.GetCurrentUserId();
-                _appLogService.Insert(new AppLogAddRequest
-                {
-                    AppLogTypeId = 1,
-                    Message = ex.Message,
-                    StackTrace = ex.StackTrace,
-                    Title = "Error in " + GetType().Name + " " + System.Reflection.MethodBase.GetCurrentMethod().Name,
-                    UserBaseId = currentUser
-                });
-
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Route("{id:int}"), HttpPut]
-        public IHttpActionResult Put(AppTokenTypeUpdateRequest model)
-        {
-            try
-            {
-                _attService.Update(model);
+                _appTokenService.Insert(model);
                 return Ok(new SuccessResponse());
             }
             catch (Exception ex)
@@ -127,12 +85,102 @@ namespace Web.Controllers.Api.AppToken
             }
         }
 
-        [Route("{id:int}"), HttpDelete]
-        public IHttpActionResult Delete(int id)
+
+        [AllowAnonymous]
+        [Route("forgotpassword"), HttpPost]
+        public IHttpActionResult InsertGUID(ForgotPasswordAppTokenAddRequest model)
         {
             try
             {
-                _attService.Delete(id);
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                ItemResponse<string> response = new ItemResponse<string>
+                {
+                    Item = _appTokenService.InsertGUID(model)
+                };
+
+                if (response.Item != null)
+                {
+                    Email eml = new Email();
+
+                    MessageAddress msgAdd = new MessageAddress
+                    {
+                        Email = model.Email
+                        //,Name = model.Email 
+                    };
+
+                    List<MessageAddress> list = new List<MessageAddress>
+                    {
+                        msgAdd
+                    };
+
+                    eml.To = list;
+                    eml.FromAddress = "Eleveightc56@gmail.com";
+                    eml.FromName = "Eleveight";
+                    eml.Subject = "Reset your password";
+                    eml.HtmlBody = _emailTemplateService.CreateForgotPassword(new EmailTemplateInput
+                    {
+                        Name = msgAdd.Name,
+                        Token = response.Item
+                    });
+
+                    _emailMessenger.SendMail(eml);
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                int currentUser = _userService.GetCurrentUserId();
+                _appLogService.Insert(new AppLogAddRequest
+                {
+                    AppLogTypeId = 1,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace,
+                    Title = "Error in " + GetType().Name + " " + System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    UserBaseId = currentUser
+                });
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [AllowAnonymous]
+        [Route("{id}"), HttpPut]
+        public IHttpActionResult UpdatePassword(ForgotPasswordUserBaseUpdateRequest model)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                _appTokenService.UpdatePassword(model);
+                return Ok(new SuccessResponse());
+            }
+            catch (Exception ex)
+            {
+                int currentUser = _userService.GetCurrentUserId();
+                _appLogService.Insert(new AppLogAddRequest
+                {
+                    AppLogTypeId = 1,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace,
+                    Title = "Error in " + GetType().Name + " " + System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    UserBaseId = currentUser
+                });
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("changePassword"), HttpPut]
+        public IHttpActionResult ChangePassword(ChangePasswordUserBaseUpdateRequest model)
+        {
+            try
+            {
+                model.CurrentUserBaseId = currentUserId;
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                Boolean isPasswordChanged = _appTokenService.ChangePassword(model);
+                if (!isPasswordChanged) return BadRequest(ModelState);
+                //if the passwords fail, don't return OK
                 return Ok(new SuccessResponse());
             }
             catch (Exception ex)
