@@ -1,4 +1,4 @@
-namespace Eleveight.Models.Domain.Forecasts
+namespace Models.Domain.Forecasts
 {
     public class TotalForecastRevenue
     {

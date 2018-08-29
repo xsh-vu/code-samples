@@ -1,11 +1,11 @@
-using Eleveight.Models.Responses;
-using Eleveight.Models.Domain.Forecasts;
-using Eleveight.Models.Requests.Forecasts;
-using Eleveight.Services.Forecasts;
+using Models.Responses;
+using Models.Domain.Forecasts;
+using Models.Requests.Forecasts;
+using Services.Forecasts;
 using System;
 using System.Web.Http;
 
-namespace Eleveight.Web.Controllers.Api.Forecasts
+namespace Web.Controllers.Api.Forecasts
 {
     [AllowAnonymous]
     [RoutePrefix("api/forecasts/forecastrevenues")]

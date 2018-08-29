@@ -1,11 +1,11 @@
-using Eleveight.Models.Domain.Forecasts;
-using Eleveight.Models.Requests.Forecasts;
-using Eleveight.Services.Tools;
+using Models.Domain.Forecasts;
+using Models.Requests.Forecasts;
+using Services.Tools;
 using System.Data.SqlClient;
 using System.Data;
 using System.Collections.Generic;
 
-namespace Eleveight.Services.Forecasts
+namespace Services.Forecasts
 {
     public class ForecastService : BaseService, IForecastService
     {

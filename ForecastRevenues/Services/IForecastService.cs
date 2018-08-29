@@ -1,6 +1,6 @@
-using Eleveight.Models.Domain.Forecasts;
-using Eleveight.Models.Requests.Forecasts;
-namespace Eleveight.Services.Forecasts
+using Models.Domain.Forecasts;
+using Models.Requests.Forecasts;
+namespace Services.Forecasts
 {
     public interface IForecastService
     {

@@ -343,10 +343,7 @@ class ForecastPage extends React.Component<any, IForecastState>{
                                         onClick={this.onClick}
                                         disabled={this.state.forecastRequest.endDate ? false : true}
                                     />
-
-
                                 </div>
-
                             </div>
                         </div>
                         <br />
