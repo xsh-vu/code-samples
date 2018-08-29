@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
-namespace Services.App
+namespace Services.AppToken
 {
     public class AppTokenTypeService : BaseService, IAppTokenTypeService
     {
